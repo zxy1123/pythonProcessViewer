@@ -5,5 +5,5 @@ if you write a process or pipeline service and regisgter in spring container, th
 
 You can chage xmlParser.py  to comform to your conf protocol. 
 
-You can use cmd like "python main.py {your path to need showing file}"
+You can use cmd like "python main.py {your path to need showing file}" and python version is 3.4
 
