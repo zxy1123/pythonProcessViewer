@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+<bean id="pushOrderProcess" class="com.newtaxi.biz.api.order.process.impl.ProcedureImpl"
+		init-method="load">
+		<property name="loadNodes">
+			<list>
+				<ref bean="startNode" />
+				<value> exclude:ifDriversEmpty</value>
+				<value> exclude:ifSys</value>
+				<ref bean="sysNode" />
+				<ref bean="subsidyNode" />
+				<value> exclude:ifSubsidyNotPromote</value>
+				<ref bean="OTDiversionNode" />
+				<value> exclude:ifOTpath</value>
+				<ref bean="OTRatioSwitchNode" />
+				<value> exclude:OTABTestChose</value>
+				<value> multiplex:multi</value>
+				<value> parallel:para</value>
+				<ref bean="OTPartitionNode" />
+				<value> exclude:ifOTfail</value>
+				<ref bean="diversionNode" />
+				<value> exclude:pathChoose</value>
+				<ref bean="normalPartitionNode" />
+				<ref bean="seriesPartitionNode" />
+				<ref bean="mergeNode" />
+				<ref bean="assignFinishNode" />
+				<ref bean="LBSNode" />
+                <ref bean="carPoolOrderNode"/>
+			</list>
+		</property>
+		<property name="loadFlows">
+			<list value-type="java.util.ArrayList">
+				<list>
+					<ref bean="startNode" />
+					<ref bean="LBSNode" />
+				</list>
+				<list>
+					<ref bean="LBSNode" />
+					<value>ifDriversEmpty</value>
+				</list>
+				<list>
+					<value>ifDriversEmpty</value>
+					<ref bean="assignFinishNode" />
+					<ref bean="IsDriversEmpty" />
+				</list>
+                <list>
+                    <value>ifDriversEmpty</value>
+                    <ref bean="carPoolOrderNode" />
+                    <ref bean="isNotDriversEmpty" />
+                </list>
+				<list>
+					<ref bean="carPoolOrderNode"/>
+					<value>ifSys</value>
+				</list>
+				<list>
+					<value>ifSys</value>
+					<ref bean="sysNode" />
+					<ref bean="isSysFlow" />
+				</list>
+				<list>
+					<value>ifSys</value>
+					<ref bean="subsidyNode" />
+					<ref bean="isNotSysFlow" />
+				</list>
+				<list>
+					<ref bean="subsidyNode" />
+					<value>ifSubsidyNotPromote</value>
+				</list>
+
+				<list>
+					<value>ifSubsidyNotPromote</value>
+					<ref bean="assignFinishNode" />
+					<ref bean="isSubsidyNotPromoteFlow" />
+				</list>
+
+				<list>
+					<value>ifSubsidyNotPromote</value>
+					<ref bean="OTDiversionNode" />
+					<ref bean="isNotSubsidyNotPromoteFlow" />
+				</list>
+				<list>
+					<ref bean="OTDiversionNode" />
+					<value>ifOTpath</value>
+				</list>
+								<!-- OT 分支 -->
+				<list>
+					<value>ifOTpath</value>
+					<ref bean="OTRatioSwitchNode" />
+					<ref bean="isOTPath" />
+				</list>
+				<list>
+					<ref bean="OTRatioSwitchNode" />
+					<value>OTABTestChose</value>
+				</list>
+
+				<list>
+					<value>OTABTestChose</value>
+					<value>multi</value>
+					<ref bean="isOTTestB" />
+				</list>
+
+				<list>
+					<value>multi</value>
+					<ref bean="diversionNode" />
+				</list>
+				<!-- 对于多路节点 后进先出 所以把并发节点放到后面 -->
+				<list>
+					<value>multi</value>
+					<value>para</value>
+				</list>
+
+				<list>
+					<value>para</value>
+					<ref bean="OTPartitionNode" />
+				</list>
+
+				<list>
+					<value>OTABTestChose</value>
+					<ref bean="OTPartitionNode" />
+					<ref bean="isOTTestA" />
+				</list>
+				<list>
+					<ref bean="OTPartitionNode" />
+					<value>ifOTfail</value>
+				</list>
+
+				<list>
+					<value>ifOTfail</value>
+					<ref bean="diversionNode" />
+					<ref bean="isOTFail" />
+				</list>
+				<list>
+					<value>ifOTfail</value>
+					<ref bean="assignFinishNode" />
+					<ref bean="isNotOTFail" />
+				</list>
+
+				<!-- normal 分支 -->
+				<list>
+					<value>ifOTpath</value>
+					<ref bean="diversionNode" />
+					<ref bean="isNotOTPath" />
+				</list>
+
+				<list>
+					<ref bean="diversionNode" />
+					<value>pathChoose</value>
+				</list>
+				<list>
+					<value>pathChoose</value>
+					<ref bean="normalPartitionNode" />
+					<ref bean="isNormalparh" />
+				</list>
+				<list>
+					<value>pathChoose</value>
+					<ref bean="seriesPartitionNode" />
+					<ref bean="isSeriesPath" />
+				</list>
+				<list>
+					<ref bean="normalPartitionNode" />
+					<ref bean="mergeNode" />
+				</list>
+				<list>
+					<ref bean="seriesPartitionNode" />
+					<ref bean="mergeNode" />
+				</list>
+				<list>
+					<ref bean="mergeNode" />
+					<ref bean="assignFinishNode" />
+				</list>
+
+			</list>
+		</property>
+	</bean>
+	</beans>
